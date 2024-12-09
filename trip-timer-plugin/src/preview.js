@@ -23,7 +23,11 @@ export default function TripCounter({
 
 	useEffect(() => {
 		const interval = setInterval(() => {
-			setTimeLeft(calculateTimeLeft(tripTime));
+			const secondsLeft = calculateTimeLeft(tripTime);
+			if (secondsLeft <= 0) {
+				clearInterval(interval);
+			}
+			setTimeLeft(getTimeLeftMessage(secondsLeft));
 			setSecondsLeft(calculateSecondsLeft(tripTime));
 		}, 500);
 		return () => {
@@ -59,7 +63,7 @@ export default function TripCounter({
 			<div class={"timeInfo" + getTimeInfoColorClass(secondsLeft)}>
 				<div>Out the door at {niceHumanTime(tripTime)}</div>
 				<div style={{ position: "relative" }}>
-					<span>{timeLeft} LEFT!</span>
+					<span>{timeLeft}</span>
 					{
 						<Button variant="tertiary" icon={edit} onClick={toggleVisible}>
 							{!isInvisible && (
@@ -134,18 +138,22 @@ function calculateTimeLeft(time) {
 	now.setMinutes(minutes);
 	now.setSeconds(0);
 
-	let secondsLeft = (now - then) / 1000; // millis
+	return (now - then) / 1000; // millis
+}
 
-	if (secondsLeft > 3600) {
+function getTimeLeftMessage(secondsLeft) {
+	if (secondsLeft <= 0) {
+		return "The trip has started!";
+	} else if (secondsLeft > 3600) {
 		let hours = Math.floor(secondsLeft / 3600);
 		let minutes = Math.floor((secondsLeft % 3600) / 60);
 
-		return `${hours} Hours and ${minutes} minutes`;
+		return `${hours} Hours and ${minutes} minutes LEFT!`;
 	} else if (secondsLeft > 60) {
 		let minutes = Math.floor(secondsLeft / 60);
 		let seconds = Math.floor(secondsLeft % 60);
 
-		return `${minutes}:${seconds.toString().padStart(2, "0")}`;
+		return `${minutes}:${seconds.toString().padStart(2, "0")} LEFT!`;
 	}
 
 	return `${secondsLeft} SECONDS`;

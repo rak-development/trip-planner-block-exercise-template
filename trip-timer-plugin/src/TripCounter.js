@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 
 export default function TripCounter({ tripName, tripTime }) {
 	const [newTaskText, setNewTaskText] = useState('');
-    const [tasks, setTasks] = useState([]);
+	const [tasks, setTasks] = useState([]);
 	const [timeLeft, setTimeLeft] = useState(calculateTimeLeft(tripTime));
 	const [secondsLeft, setSecondsLeft] = useState(
 		calculateSecondsLeft(tripTime),
@@ -13,7 +13,11 @@ export default function TripCounter({ tripName, tripTime }) {
 
 	useEffect(() => {
 		const interval = setInterval(() => {
-			setTimeLeft(calculateTimeLeft(tripTime));
+			const secondsLeft = calculateTimeLeft(tripTime);
+			if (secondsLeft <= 0) {
+				clearInterval(interval);
+			}
+			setTimeLeft(getTimeLeftMessage(secondsLeft));
 			setSecondsLeft(calculateSecondsLeft(tripTime));
 		}, 500);
 		return () => {
@@ -37,77 +41,77 @@ export default function TripCounter({ tripName, tripTime }) {
 	}
 
 	function checkEnterKey(event) {
-        if (event.key && event.key === 'Enter') {
-            addNewTask();
-        };
-    }
+		if (event.key && event.key === 'Enter') {
+			addNewTask();
+		};
+	}
 
-    function addNewTask() {
-        setTasks([...tasks, {text: newTaskText, done: false}]);
-        setNewTaskText('');
-    }
+	function addNewTask() {
+		setTasks([...tasks, {text: newTaskText, done: false}]);
+		setNewTaskText('');
+	}
 
-    function changeCheckbox(event) {
-        const updatedTasks = Array.from(tasks);
-        const index = event.target.id.match(/\d/)[0];
+	function changeCheckbox(event) {
+		const updatedTasks = Array.from(tasks);
+		const index = event.target.id.match(/\d/)[0];
 
-        updatedTasks[index].done = event.target.checked;
-        setTasks(updatedTasks);
-    }
+		updatedTasks[index].done = event.target.checked;
+		setTasks(updatedTasks);
+	}
 
-    const listItems = tasks.map((task, index) => {
-        let itemClass = "taskItem";
-        if (task?.done) {
-            itemClass += " done";
-        }
+	const listItems = tasks.map((task, index) => {
+		let itemClass = "taskItem";
+		if (task?.done) {
+			itemClass += " done";
+		}
 
-        const id = `taskCheckbox_${index}`;
+		const id = `taskCheckbox_${index}`;
 
-        return (
-            <li className={itemClass} key={index}>
-                <input
-                    type="checkbox"
-                    id={id}
-                    onChange={changeCheckbox}
-                    checked={task.done}
-                />
-                <label htmlFor={id}>{task.text}</label>
-            </li>
-        );
-    });
+		return (
+			<li className={itemClass} key={index}>
+				<input
+					type="checkbox"
+					id={id}
+					onChange={changeCheckbox}
+					checked={task.done}
+				/>
+				<label htmlFor={id}>{task.text}</label>
+			</li>
+		);
+	});
 
 	return (
 		<div class="CountdownPage">
 			<h2>{tripName}</h2>
 			<div class={"timeInfo" + getTimeInfoColorClass(secondsLeft)}>
 				<div>Out the door at {niceHumanTime(tripTime)}</div>
-				<div>{timeLeft} LEFT!</div>
+				<div>{timeLeft}</div>
 			</div>
 			<div class="otherStuff">
-                <div>
-                    <h2>Things Left To Do</h2>
-                </div>
-                <div>
-                    <ul>
-                        {listItems}
-                    </ul>
-                </div>
+				<div>
+					<h2>Things Left To Do</h2>
+				</div>
+				<div>
+					<ul>
+						{listItems}
+					</ul>
+				</div>
 
-                <div>
-                    <input
-                        class="newTask"
-                        placeholder="Add tasks here"
-                        value={newTaskText}
+				<div>
+					<input
+						class="newTask"
+						placeholder="Add tasks here"
+						value={newTaskText}
                         onChange={e => setNewTaskText(e.target.value)}
-                        onKeyDown={checkEnterKey}
-                    />
-                    <button onClick={addNewTask}>+</button>
-                </div>
+						onKeyDown={checkEnterKey}
+					/>
+					<button onClick={addNewTask}>+</button>
+				</div>
                 <div className={encouragementAreaClasses()}>
                     {encouragement}
                 </div>
-            </div>
-        </div>
+			</div>
+		</div>
 	);
 }
 
@@ -159,18 +163,22 @@ function calculateTimeLeft(time) {
 	now.setMinutes(minutes);
 	now.setSeconds(0);
 
-	let secondsLeft = (now - then) / 1000; // millis
+	return (now - then) / 1000; // millis
+}
 
-	if (secondsLeft > 3600) {
+function getTimeLeftMessage(secondsLeft) {
+	if (secondsLeft <= 0) {
+		return "The trip has started!";
+	} else if (secondsLeft > 3600) {
 		let hours = Math.floor(secondsLeft / 3600);
 		let minutes = Math.floor((secondsLeft % 3600) / 60);
 
-		return `${hours} Hours and ${minutes} minutes`;
+		return `${hours} Hours and ${minutes} minutes LEFT!`;
 	} else if (secondsLeft > 60) {
 		let minutes = Math.floor(secondsLeft / 60);
 		let seconds = Math.floor(secondsLeft % 60);
 
-		return `${minutes}:${seconds.toString().padStart(2, "0")}`;
+		return `${minutes}:${seconds.toString().padStart(2, "0")} LEFT!`;
 	}
 
 	return `${secondsLeft} SECONDS`;
