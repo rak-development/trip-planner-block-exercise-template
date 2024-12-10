@@ -19,7 +19,6 @@ export default function TripCounter({
 	const [secondsLeft, setSecondsLeft] = useState(
 		calculateSecondsLeft(tripTime),
 	);
-	const encouragement = "Let's go!";
 
 	useEffect(() => {
 		const interval = setInterval(() => {
@@ -48,6 +47,16 @@ export default function TripCounter({
 		}
 
 		return classes.join(" ");
+	}
+
+	function encouragementAreaText() {
+		if (secondsLeft > 300 && secondsLeft < 600) {
+			return "Almost time to leave!";
+		} else if (secondsLeft < 300) {
+			return "Time to go!";
+		} else {
+			return "Let's go!";
+		}
 	}
 
 	return (
@@ -84,7 +93,7 @@ export default function TripCounter({
 				</div>
 			</div>
 			<div class="otherStuff">
-				<div className={encouragementAreaClasses()}>{encouragement}</div>
+				<div className={encouragementAreaClasses()}>{encouragementAreaText()}</div>
 			</div>
 		</div>
 	);

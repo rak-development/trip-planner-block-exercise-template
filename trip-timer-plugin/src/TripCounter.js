@@ -4,12 +4,11 @@ import { useState, useEffect } from "react";
 
 export default function TripCounter({ tripName, tripTime }) {
 	const [newTaskText, setNewTaskText] = useState('');
-	const [tasks, setTasks] = useState([]);
+    const [tasks, setTasks] = useState([]);
 	const [timeLeft, setTimeLeft] = useState(calculateTimeLeft(tripTime));
 	const [secondsLeft, setSecondsLeft] = useState(
 		calculateSecondsLeft(tripTime),
 	);
-	const encouragement = "Let's go!";
 
 	useEffect(() => {
 		const interval = setInterval(() => {
@@ -40,45 +39,55 @@ export default function TripCounter({ tripName, tripTime }) {
 		return classes.join(" ");
 	}
 
-	function checkEnterKey(event) {
-		if (event.key && event.key === 'Enter') {
-			addNewTask();
-		};
-	}
-
-	function addNewTask() {
-		setTasks([...tasks, {text: newTaskText, done: false}]);
-		setNewTaskText('');
-	}
-
-	function changeCheckbox(event) {
-		const updatedTasks = Array.from(tasks);
-		const index = event.target.id.match(/\d/)[0];
-
-		updatedTasks[index].done = event.target.checked;
-		setTasks(updatedTasks);
-	}
-
-	const listItems = tasks.map((task, index) => {
-		let itemClass = "taskItem";
-		if (task?.done) {
-			itemClass += " done";
+	function encouragementAreaText() {
+		if (secondsLeft > 300 && secondsLeft < 600) {
+			return "Almost time to leave!";
+		} else if (secondsLeft < 300) {
+			return "Time to go!";
+		} else {
+			return "Let's go!";
 		}
+	}
 
-		const id = `taskCheckbox_${index}`;
+	function checkEnterKey(event) {
+        if (event.key && event.key === 'Enter') {
+            addNewTask();
+        };
+    }
 
-		return (
-			<li className={itemClass} key={index}>
-				<input
-					type="checkbox"
-					id={id}
-					onChange={changeCheckbox}
-					checked={task.done}
-				/>
-				<label htmlFor={id}>{task.text}</label>
-			</li>
-		);
-	});
+    function addNewTask() {
+        setTasks([...tasks, {text: newTaskText, done: false}]);
+        setNewTaskText('');
+    }
+
+    function changeCheckbox(event) {
+        const updatedTasks = Array.from(tasks);
+        const index = event.target.id.match(/\d/)[0];
+
+        updatedTasks[index].done = event.target.checked;
+        setTasks(updatedTasks);
+    }
+
+    const listItems = tasks.map((task, index) => {
+        let itemClass = "taskItem";
+        if (task?.done) {
+            itemClass += " done";
+        }
+
+        const id = `taskCheckbox_${index}`;
+
+        return (
+            <li className={itemClass} key={index}>
+                <input
+                    type="checkbox"
+                    id={id}
+                    onChange={changeCheckbox}
+                    checked={task.done}
+                />
+                <label htmlFor={id}>{task.text}</label>
+            </li>
+        );
+    });
 
 	return (
 		<div class="CountdownPage">
@@ -88,30 +97,30 @@ export default function TripCounter({ tripName, tripTime }) {
 				<div>{timeLeft}</div>
 			</div>
 			<div class="otherStuff">
-				<div>
-					<h2>Things Left To Do</h2>
-				</div>
-				<div>
-					<ul>
-						{listItems}
-					</ul>
-				</div>
-
-				<div>
-					<input
-						class="newTask"
-						placeholder="Add tasks here"
-						value={newTaskText}
-                        onChange={e => setNewTaskText(e.target.value)}
-						onKeyDown={checkEnterKey}
-					/>
-					<button onClick={addNewTask}>+</button>
-				</div>
-                <div className={encouragementAreaClasses()}>
-                    {encouragement}
+                <div>
+                    <h2>Things Left To Do</h2>
                 </div>
-			</div>
-		</div>
+                <div>
+                    <ul>
+                        {listItems}
+                    </ul>
+                </div>
+
+                <div>
+                    <input
+                        class="newTask"
+                        placeholder="Add tasks here"
+                        value={newTaskText}
+                        onChange={e => setNewTaskText(e.target.value)}
+                        onKeyDown={checkEnterKey}
+                    />
+                    <button onClick={addNewTask}>+</button>
+                </div>
+                <div className={encouragementAreaClasses()}>
+                    {encouragementAreaText()}
+                </div>
+            </div>
+        </div>
 	);
 }
 
@@ -162,7 +171,7 @@ function calculateTimeLeft(time) {
 	now.setHours(hours);
 	now.setMinutes(minutes);
 	now.setSeconds(0);
-
+	
 	return (now - then) / 1000; // millis
 }
 
